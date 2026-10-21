@@ -1,4 +1,4 @@
-# 每日运行：抓取 -> 生成日报 -> 提交到 GitHub
+﻿# 每日运行：抓取 -> 生成日报 -> 提交到 GitHub
 $ErrorActionPreference = 'Continue'
 Set-Location -LiteralPath $PSScriptRoot\..
 

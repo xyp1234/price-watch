@@ -1,4 +1,5 @@
-# 注册 Windows 每日定时任务（默认 08:30）
+﻿# 注册 Windows 每日定时任务（默认 08:30）
+# 用 schtasks 而非 Register-ScheduledTask，普通用户权限即可，不需要管理员。
 param(
     [string]$Time = '08:30',
     [string]$TaskName = 'PriceWatch Daily'
@@ -6,28 +7,15 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $script = Join-Path $PSScriptRoot 'daily.ps1'
-
 if (-not (Test-Path -LiteralPath $script)) { throw "daily.ps1 not found: $script" }
 
-$action = New-ScheduledTaskAction `
-    -Execute 'powershell.exe' `
-    -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$script`"" `
-    -WorkingDirectory (Split-Path -Parent (Split-Path -Parent $script))
+$cmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$script`""
 
-$trigger = New-ScheduledTaskTrigger -Daily -At $Time
+# 先删旧的，忽略不存在的报错
+schtasks /Delete /TN "$TaskName" /F 2>&1 | Out-Null
 
-# 即使没有登录也运行
-$principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -RunLevel Highest -LogonType S4U
-
-$settings = New-ScheduledTaskSettingsSet `
-    -StartWhenAvailable `
-    -DontStopIfGoingOnBatteries `
-    -AllowStartIfOnBatteries `
-    -ExecutionTimeLimit (New-TimeSpan -Minutes 30) `
-    -RestartCount 3 `
-    -RestartInterval (New-TimeSpan -Minutes 10)
-
-Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
+schtasks /Create /TN "$TaskName" /TR "$cmd" /SC DAILY /ST $Time /F
+if ($LASTEXITCODE -ne 0) { throw "schtasks /Create failed with exit code $LASTEXITCODE" }
 
 Write-Host "task '$TaskName' registered, runs daily at $Time" -ForegroundColor Green
-Get-ScheduledTask -TaskName $TaskName | Select-Object TaskName, State
+schtasks /Query /TN "$TaskName" /FO LIST | Select-String -Pattern 'TaskName|Next Run|Status|Schedule Type'

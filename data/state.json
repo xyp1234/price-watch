@@ -830,6 +830,19 @@
           ],
           "config": "Core5-315 / 12G / 500G",
           "firstSeen": "2026-10-21T15:58:09.130Z"
+        },
+        "https://cu.manmanbuy.com/discuxiao_19883157.aspx": {
+          "price": 3220.65,
+          "date": "04-08 14:10",
+          "ts": 1775628600000,
+          "platform": "京东",
+          "name": "机械革命 无界14X斗战版 R7-H255 16G 512G 60Hz 笔记本电脑 灰色",
+          "tags": [
+            "30天新低",
+            "30天新低"
+          ],
+          "config": "R7-255 / 16G / 512G",
+          "firstSeen": "2026-10-21T16:16:10.341Z"
         }
       },
       "lowestEver": 2670.72,
