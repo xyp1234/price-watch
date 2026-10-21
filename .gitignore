@@ -1,0 +1,14 @@
+node_modules/
+.profile/
+npm-debug.log*
+
+# GitHub 凭据（绝不入库）
+.github-token
+
+# 抓取过程中的调试产物
+probe*.js
+debug-search.js
+test-*.js
+siteDiscount.js
+baoliao-sample.html
+sample.json

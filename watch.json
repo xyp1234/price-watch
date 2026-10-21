@@ -1,0 +1,81 @@
+{
+  "repo": "price-watch",
+  "products": [
+    {
+      "id": "mre-wujie14x",
+      "name": "机械革命 无界14X (R7-H255, 核显)",
+      "note": "3000-4000 档性价比标杆, R7 H255 核显跑 LOL/绝区零",
+      "keywords": ["机械革命无界14X", "无界14X R7H255", "机械革命无界14"],
+      "match": ["无界\\s*14X?"],
+      "min": 2500,
+      "max": 4600
+    },
+    {
+      "id": "mre-wujie14s",
+      "name": "机械革命 无界14S 2026 (Core i5-315)",
+      "note": "更便宜一档, 12G+500G 起",
+      "keywords": ["机械革命无界14S", "无界14S 2026"],
+      "match": ["无界\\s*14S"],
+      "min": 2500,
+      "max": 4600
+    },
+    {
+      "id": "mre-wujie15x",
+      "name": "机械革命 无界15X (R7-H255, 15.3寸)",
+      "note": "大屏版, 2.5K 120Hz",
+      "keywords": ["机械革命无界15X", "无界15X R7-H255"],
+      "match": ["无界\\s*15X"],
+      "min": 2800,
+      "max": 5200
+    },
+    {
+      "id": "lecoo-bellator7000",
+      "name": "联想来酷 斗战者 战7000 (RTX5060)",
+      "note": "3000-4000 唯一独显游戏本, 绝区零稳 60fps 高画质",
+      "keywords": ["联想来酷斗战者", "来酷斗战者战7000", "来酷 Bellator"],
+      "match": ["斗战者|战7000|Bellator"],
+      "min": 2800,
+      "max": 5200
+    },
+    {
+      "id": "asus-wuwei16",
+      "name": "华硕 无畏16 (R7-8845H, 16G+1T)",
+      "note": "一线品牌核显, 做工/售后好",
+      "keywords": ["华硕无畏16", "无畏16 8845H"],
+      "match": ["无畏\\s*16"],
+      "min": 3000,
+      "max": 5200
+    },
+    {
+      "id": "asus-wushuang14",
+      "name": "华硕 无双 锐龙版 (R7-8845H, 16G+512G)",
+      "note": "14 寸一线核显本",
+      "keywords": ["华硕无双 锐龙版", "华硕无双 8845H"],
+      "match": ["无双"],
+      "min": 3000,
+      "max": 5200
+    },
+    {
+      "id": "lecoo-pro14",
+      "name": "联想来酷 Pro14 (Ultra5-135H, 16G+1T)",
+      "note": "2.8K 120Hz, 联想售后",
+      "keywords": ["来酷Pro14", "联想来酷 Pro14"],
+      "match": ["来酷\\s*Pro\\s*14|Pro14"],
+      "min": 3000,
+      "max": 5200
+    },
+    {
+      "id": "mre-jiguangpro",
+      "name": "机械革命 极光Pro / 蛟龙16Pro (RTX5060)",
+      "note": "独显整机本低价位",
+      "keywords": ["机械革命极光Pro", "蛟龙16Pro 5060", "机械革命 极光 Pro 游戏本"],
+      "match": ["极光\\s*Pro|蛟龙|极光X"],
+      "min": 3200,
+      "max": 5600
+    }
+  ],
+  "alerts": {
+    "triggerTags": ["历史新低", "历史最低", "30天新低", "60天新低", "90天新低", "180天新低"],
+    "includeEnded": false
+  }
+}
