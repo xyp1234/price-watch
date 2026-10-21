@@ -5,6 +5,10 @@ npm-debug.log*
 # GitHub 凭据（绝不入库）
 .github-token
 
+# GitHub Actions 备份方案：需 PAT 带 workflow scope 才能推上这条文件。
+# 本机 Windows 计划任务才是主方案，所以先不入库。
+.github/workflows/daily.yml
+
 # 抓取过程中的调试产物
 probe*.js
 debug-search.js
