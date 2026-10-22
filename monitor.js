@@ -85,8 +85,8 @@ async function main() {
       const ckey = configKey(it.name);
       const isNew = !st.seen[key];
       if (isNew) {
-        st.seen[key] = { price: it.price, date: it.date, ts, platform: it.platform, name: it.name, tags: it.tags, config: ckey, firstSeen: now };
-        appendLine(HIST_FILE, { ts: now, product: p.id, productName: p.name, config: ckey, price: it.price, date: it.date, platform: it.platform, name: it.name, tags: it.tags, priceText: it.priceText, keyword: it.keyword });
+        st.seen[key] = { price: it.price, date: it.date, ts, platform: it.platform, name: it.name, tags: it.tags, config: ckey, shopUrl: it.shopUrl, baoliaoUrl: it.baoliaoUrl, firstSeen: now };
+        appendLine(HIST_FILE, { ts: now, product: p.id, productName: p.name, config: ckey, price: it.price, date: it.date, platform: it.platform, name: it.name, tags: it.tags, priceText: it.priceText, keyword: it.keyword, shopUrl: it.shopUrl, baoliaoUrl: it.baoliaoUrl });
         if (!SEED) fresh.push({ ...it, key, ts, config: ckey });
       }
       // 型号级最低价：不论有没有标签都参与
@@ -100,7 +100,7 @@ async function main() {
       // 告警：带新低标签 + 事件本身是近期的
       const isLow = it.tags.some((t) => LOW_TAGS.includes(t));
       if (isLow && isNew && !SEED && ts != null && ts >= freshTs) {
-        const alert = { ts: now, product: p.id, productName: p.name, config: ckey, price: it.price, date: it.date, platform: it.platform, name: it.name, tags: it.tags, priceText: it.priceText };
+        const alert = { ts: now, product: p.id, productName: p.name, config: ckey, price: it.price, date: it.date, platform: it.platform, name: it.name, tags: it.tags, priceText: it.priceText, shopUrl: it.shopUrl, baoliaoUrl: it.baoliaoUrl };
         allAlerts.push(alert);
         appendLine(ALERT_FILE, alert);
       }
@@ -127,6 +127,7 @@ async function main() {
         curDate: curRec ? curRec.date : null,
         curTs: curRec ? curRec.ts : null,
         curPlatform: curRec ? curRec.platform : null,
+        curUrl: curRec ? (curRec.shopUrl || curRec.baoliaoUrl || '') : '',
         lowestEver: lowest,
         lowestEverAt: (st.lowestByConfig[k] && st.lowestByConfig[k].date) || null,
         avg30: d30.length ? d30.reduce((a, b) => a + b.price, 0) / d30.length : null,
@@ -148,8 +149,8 @@ async function main() {
       min30: d30All.length ? Math.min(...d30All.map((s) => s.price)) : null,
       avgAll: all.length ? all.reduce((a, b) => a + b.price, 0) / all.length : null,
       freshCount: fresh.length,
-      fresh: fresh.map((f) => ({ price: f.price, date: f.date, platform: f.platform, tags: f.tags, name: f.name, config: f.config })),
-      sample: datedAll.slice(0, 8).map((i) => ({ price: i.price, date: i.date, platform: i.platform, tags: i.tags, config: i.config })),
+      fresh: fresh.map((f) => ({ price: f.price, date: f.date, platform: f.platform, tags: f.tags, name: f.name, config: f.config, url: f.shopUrl || f.baoliaoUrl || '' })),
+      sample: datedAll.slice(0, 8).map((i) => ({ price: i.price, date: i.date, platform: i.platform, tags: i.tags, config: i.config, url: i.shopUrl || i.baoliaoUrl || '' })),
       cfgRows,
     });
 
@@ -185,8 +186,7 @@ async function main() {
   return { alerts: allAlerts, rows: reportRows };
 }
 
-function fmt(n) {
-  if (n == null) return '—';
+function fmt(n) {  if (n == null) return '—';
   return '¥' + Number(n).toFixed(2);
 }
 function bar(pct) {
@@ -209,25 +209,28 @@ function buildReport(cfg, rows, alerts) {
     L.push('今日无新增历史新低事件。');
     L.push('');
   } else {
-    L.push('| 商品 | 配置 | 到手价 | 平台 | 时间 | 标记 |');
-    L.push('|---|---|---:|---|---|---|');
+    L.push('| 商品 | 配置 | 到手价 | 平台 | 时间 | 标记 | 链接 |');
+    L.push('|---|---|---:|---|---|---|---|');
     for (const a of alerts) {
-      L.push(`| ${a.productName} | ${a.config || '-'} | **${fmt(a.price)}** | ${a.platform || '-'} | ${a.date} | ${(a.tags || []).join('/')} |`);
+      const u = a.shopUrl || a.baoliaoUrl || '';
+      const link = u ? `[${/\bjd\.com\b/.test(u) ? '京东' : /tmall|taobao/.test(u) ? '淘宝' : '去看看'}](${u})` : '—';
+      L.push(`| ${a.productName} | ${a.config || '-'} | **${fmt(a.price)}** | ${a.platform || '-'} | ${a.date} | ${(a.tags || []).join('/')} | ${link} |`);
     }
     L.push('');
   }
 
   L.push('## 📊 监控总览（按配置，同型号不同配置不可混比）');
   L.push('');
-  L.push('| 商品 | 配置 | 当前最低价 | 日期 | 平台 | 历史最低 | 距历史新低 | 30天均价 |');
-  L.push('|---|---|---:|---|---|---:|---|---:|');
+  L.push('| 商品 | 配置 | 当前最低价 | 日期 | 平台 | 历史最低 | 距历史新低 | 30天均价 | 链接 |');
+  L.push('|---|---|---:|---|---|---:|---|---:|---|');
   const allCfg = rows.flatMap((r) => r.cfgRows.map((c) => ({ ...c, note: r.note })));
   for (const c of allCfg) {
     const vsLow = c.lowestEver && c.current ? (c.current / c.lowestEver - 1) * 100 : null;
     const atLow = vsLow != null && Math.abs(vsLow) < 0.5;
     const badge = c.n < 2 ? '⚪ 样本少' : vsLow == null ? '—' : atLow ? '🟢 **新低**' : '⚪ +' + vsLow.toFixed(1) + '%';
+    const link = c.curUrl ? `[${/\bjd\.com\b/.test(c.curUrl) ? '京东' : /tmall|taobao/.test(c.curUrl) ? '淘宝' : '去看看'}](${c.curUrl})` : '—';
     L.push(
-      `| ${c.productName} | ${c.config} | **${fmt(c.current)}** | ${c.curDate || '—'} | ${c.curPlatform || '-'} | ${fmt(c.lowestEver)} | ${badge} | ${fmt(c.avg30)} |`
+      `| ${c.productName} | ${c.config} | **${fmt(c.current)}** | ${c.curDate || '—'} | ${c.curPlatform || '-'} | ${fmt(c.lowestEver)} | ${badge} | ${fmt(c.avg30)} | ${link} |`
     );
   }
   L.push('');
@@ -241,10 +244,11 @@ function buildReport(cfg, rows, alerts) {
     if (r.note) L.push(`*${r.note}*`);
     L.push('');
     if (!r.sample.length) { L.push('（近期无价格记录）\n'); continue; }
-    L.push('| 时间 | 配置 | 平台 | 价格 | 标记 |');
-    L.push('|---|---|---|---:|---|');
+    L.push('| 时间 | 配置 | 平台 | 价格 | 标记 | 链接 |');
+    L.push('|---|---|---|---:|---|---|');
     for (const s of r.sample) {
-      L.push(`| ${s.date} | ${s.config || '-'} | ${s.platform || '-'} | ${fmt(s.price)} | ${(s.tags || []).filter(Boolean).join('/') || '-'} |`);
+      const link = s.url ? `[去看看](${s.url})` : '—';
+      L.push(`| ${s.date} | ${s.config || '-'} | ${s.platform || '-'} | ${fmt(s.price)} | ${(s.tags || []).filter(Boolean).join('/') || '-'} | ${link} |`);
     }
     L.push('');
   }
@@ -263,7 +267,8 @@ function buildReport(cfg, rows, alerts) {
     L.push('**🎯 预算内 + 接近历史最低价 + 近 30 天有报价，优先考虑：**');
     L.push('');
     for (const c of near) {
-      L.push(`- **${c.productName} · ${c.config}** — **${fmt(c.current)}**（${c.curDate || ''} ${c.curPlatform || ''}），${gapText(c)}`);
+      const link = c.curUrl ? ` · [去看看](${c.curUrl})` : '';
+      L.push(`- **${c.productName} · ${c.config}** — **${fmt(c.current)}**（${c.curDate || ''} ${c.curPlatform || ''}），${gapText(c)}${link}`);
     }
   } else {
     L.push('预算内暂无商品同时满足「近 30 天有报价」与「接近历史最低价」，继续等待。');
